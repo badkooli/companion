@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Storefront Mascot</title>
+  <style>
+    :root {
+      --bg-color: #0b0c10;
+      --panel-bg: #1f2833;
+      --text-green: #5e8a5e;
+      --text-bright: #ffffff;
+      
+      /* Dynamic Theme Colors */
+      --mascot-hue-primary: #7fa87f;
+      --mascot-hue-mid: #5e8a5e;
+      --mascot-hue-dark: #3b5c3b;
+      --mascot-hue-deep: #1a2e1a;
+      --mascot-glow: rgba(94, 138, 94, 0.4);
+      --eye-color: #ffffff;
+      --eye-glow: rgba(255, 255, 255, 0.8);
+    }
+
+    /* Shut Down Mood Styling - Grey Theme */
+    .mood-shutdown {
+      --mascot-hue-primary: #94a3b8;
+      --mascot-hue-mid: #64748b;
+      --mascot-hue-dark: #475569;
+      --mascot-hue-deep: #1e293b;
+      --mascot-glow: rgba(100, 116, 139, 0.3);
+      --eye-color: #cbd5e1;
+      --eye-glow: rgba(148, 163, 184, 0.5);
+      --text-green: #64748b;
+    }
+
+    /* Wake Up Transition Styling - Cyan Theme */
+    .mood-wakeup {
+      --mascot-hue-primary: #22d3ee;
+      --mascot-hue-mid: #06b6d4;
+      --mascot-hue-dark: #0891b2;
+      --mascot-hue-deep: #164e63;
+      --mascot-glow: rgba(6, 182, 212, 0.6);
+      --eye-color: #e0f2fe;
+      --eye-glow: rgba(6, 182, 212, 0.9);
+      --text-green: #06b6d4;
+    }
+
+    .mood-angry {
+      --mascot-hue-primary: #ef4444;
+      --mascot-hue-mid: #dc2626;
+      --mascot-hue-dark: #7f1d1d;
+      --mascot-hue-deep: #450a0a;
+      --mascot-glow: rgba(239, 68, 68, 0.7);
+      --eye-color: #ffe4e6;
+      --eye-glow: rgba(239, 68, 68, 1);
+      --text-green: #ef4444;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      font-family: 'Courier New', Courier, monospace;
+      color: var(--text-bright);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Original Storefront Interface Wrapper */
+    .storefront-container {
+      text-align: center;
+      background: var(--panel-bg);
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.05);
+      z-index: 10;
+      width: 420px;
+      max-width: 90vw;
+    }
+
+    .btn-group {
+      margin-top: 20px;
+    }
+
+    button {
+      background: transparent;
+      border: 2px solid var(--text-green);
+      color: var(--text-bright);
+      padding: 12px 24px;
+      font-size: 14px;
+      font-family: inherit;
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+      margin: 0 6px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+    }
+
+    button:hover {
+      background: var(--text-green);
+      color: var(--bg-color);
+      box-shadow: 0 0 15px rgba(94, 138, 94, 0.4);
+    }
+
+    /* Terminal Output Box from Initial Code */
+    .terminal-output {
+      margin-top: 25px;
+      font-size: 14px;
+      color: var(--text-green);
+      letter-spacing: 1px;
+      min-height: 20px;
+      transition: color 0.3s ease;
+    }
+
+    /* ==========================================================================
+       3D MASCOT CORE & STAGE
+       ========================================================================== */
+    .mascot-stage {
+      width: 300px;
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 800px;
+      margin-bottom: 20px;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+    }
+
+    .mascot-stage:active { cursor: grabbing; }
+
+    .floating-core {
+      width: 180px;
+      height: 180px;
+      position: relative;
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    /* Brushed Metal Anisotropic Texture */
+    .sphere-ball {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      position: absolute;
+      background: 
+        radial-gradient(circle at 35% 25%, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 40%),
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.03) 0px, rgba(0,0,0,0.03) 1px, transparent 1px, transparent 3px),
+        radial-gradient(circle at 50% 50%, var(--mascot-hue-primary) 0%, var(--mascot-hue-mid) 50%, var(--mascot-hue-dark) 85%, var(--mascot-hue-deep) 100%);
+      box-shadow: 
+        inset -10px -10px 30px rgba(0,0,0,0.7),
+        inset 10px 10px 20px rgba(255,255,255,0.2),
+        0 15px 35px var(--mascot-glow);
+      transition: background 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    /* Eye Container mapped onto 3D Hull */
+    .eye-container {
+      position: absolute;
+      width: 100px;
+      height: 50px;
+      top: 65px;
+      left: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transform: translateZ(25px);
+      pointer-events: none;
+    }
+
+    .eye-path {
+      transition: d 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), fill 0.3s ease;
+      fill: var(--eye-color);
+      filter: drop-shadow(0px 0px 6px var(--eye-glow));
+    }
+
+    /* Original Gesture Keyframes */
+    .gesture-nod { animation: nodAction 0.6s ease-in-out; }
+    .gesture-spin { animation: spinAction 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+    @keyframes nodAction {
+      0%, 100% { transform: scale(1) rotateX(0deg); }
+      30% { transform: scale(0.9, 1.1) translateY(15px) rotateX(20deg); }
+      70% { transform: scale(1.05, 0.95) translateY(-10px) rotateX(-15deg); }
+    }
+
+    @keyframes spinAction {
+      0% { transform: rotateY(0deg) scale(1); }
+      50% { transform: rotateY(180deg) scale(1.15) translateY(-20px); }
+      100% { transform: rotateY(360deg) scale(1); }
+    }
+
+    @keyframes rageShake {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-3px, 2px); }
+      50% { transform: translate(3px, -2px); }
+      75% { transform: translate(-2px, -3px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    .animate-rage-shake { animation: rageShake 0.1s infinite linear; }
+  </style>
+</head>
+<body>
+
+  <!-- Mascot Floating Stage -->
+  <div class="mascot-stage" id="mascotStage">
+    <div class="floating-core" id="mascotCore">
+      <div class="sphere-ball"></div>
+      <div class="eye-container" id="eyeContainer">
+        <svg width="36" height="36" viewBox="0 0 50 50">
+          <path id="leftEyePath" class="eye-path" d="M 12 25 A 13 13 0 1 0 38 25 A 13 13 0 1 0 12 25 Z" />
+        </svg>
+        <svg width="36" height="36" viewBox="0 0 50 50">
+          <path id="rightEyePath" class="eye-path" d="M 12 25 A 13 13 0 1 0 38 25 A 13 13 0 1 0 12 25 Z" />
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Storefront Clean Control Panel -->
+  <div class="storefront-container">
+    <div class="btn-group">
+      <button onclick="triggerLogin()">Simulate Login</button>
+      <button onclick="triggerPurchase()">Simulate Purchase</button>
+    </div>
+    <div class="terminal-output" id="terminalText">[SYSTEM STATE: IDLE - STANDBY MODE]</div>
+  </div>
+
+  <script>
+    /* ==========================================================================
+       STATE & CONFIGURATION
+       ========================================================================== */
+    const CONFIG = {
+      lerpFactor: 0.08,
+      decayRate: 1.8,
+      maxAnnoyance: 10,
+      boredTimeoutSec: 20,
+      rubRequiredPx: 400,
+    };
+
+    const STATE = {
+      mascotPos: { x: 0, y: 0 },
+      mascotVel: { x: 0, y: 0 },
+      cursorPos: { x: window.innerWidth / 2, y: window.innerHeight / 2 },
+      
+      isDragging: false,
+      dragOffset: { x: 0, y: 0 },
+      lastPointerPos: { x: 0, y: 0 },
+
+      rubProgress: 0,
+      saccadeOffset: { x: 0, y: 0 },
+      lastSaccadeTime: 0,
+      lastBlinkTime: 0,
+      isBlinking: false,
+
+      pokeCount: 0,
+      lastInteractionTime: performance.now(),
+      isBored: false,
+      currentExpression: 'neutral',
+
+      rotX: 0, rotY: 0, scale: 1, zOffset: 0,
+      annoyance: 0, mood: 'idle',
+      lastPokeTime: 0,
+      lastFrameTime: performance.now(),
+      typewriterTimer: null
+    };
+
+    // DOM Elements
+    const mascotStage = document.getElementById('mascotStage');
+    const mascotCore = document.getElementById('mascotCore');
+    const eyeContainer = document.getElementById('eyeContainer');
+    const leftEyePath = document.getElementById('leftEyePath');
+    const rightEyePath = document.getElementById('rightEyePath');
+    const terminalText = document.getElementById('terminalText');
+
+    /* ==========================================================================
+       EXPRESSION MATRIX (Vector Paths matching Redbubble Poster)
+       ========================================================================== */
+    const EYE_PATHS = {
+      neutral: {
+        left:  "M 12 25 A 13 13 0 1 0 38 25 A 13 13 0 1 0 12 25 Z",
+        right: "M 12 25 A 13 13 0 1 0 38 25 A 13 13 0 1 0 12 25 Z"
+      },
+      happy: {
+        left:  "M 12 25 A 13 13 0 0 1 38 25 L 12 25 Z",
+        right: "M 12 25 A 13 13 0 0 1 38 25 L 12 25 Z"
+      },
+      surprised: {
+        left:  "M 10 25 A 15 15 0 1 0 40 25 A 15 15 0 1 0 10 25 Z",
+        right: "M 10 25 A 15 15 0 1 0 40 25 A 15 15 0 1 0 10 25 Z"
+      },
+      confused: {
+        left:  "M 12 25 A 13 13 0 1 0 38 25 A 13 13 0 1 0 12 25 Z",
+        right: "M 12 25 L 38 25 A 13 13 0 0 1 12 25 Z"
+      },
+      angry: {
+        left:  "M 12 18 L 38 28 A 13 13 0 0 1 12 18 Z",
+        right: "M 12 28 L 38 18 A 13 13 0 0 1 12 28 Z"
+      },
+      bored: {
+        left:  "M 12 25 L 38 25 A 13 13 0 0 1 12 25 Z",
+        right: "M 12 25 L 38 25 A 13 13 0 0 1 12 25 Z"
+      },
+      shutdown: { // Grey Slits (- -)
+        left:  "M 10 22 L 40 22 C 42 22 42 28 40 28 L 10 28 C 8 28 8 22 10 22 Z",
+        right: "M 10 22 L 40 22 C 42 22 42 28 40 28 L 10 28 C 8 28 8 22 10 22 Z"
+      },
+      wakeup: { // Cyan Slit & Circle (- o)
+        left:  "M 10 22 L 40 22 C 42 22 42 28 40 28 L 10 28 C 8 28 8 22 10 22 Z",
+        right: "M 15 25 A 10 10 0 1 0 35 25 A 10 10 0 1 0 15 25 Z"
+      },
+      blink: {
+        left:  "M 10 25 Q 25 25 40 25 Q 25 25 10 25 Z",
+        right: "M 10 25 Q 25 25 40 25 Q 25 25 10 25 Z"
+      }
+    };
+
+    function setExpression(name) {
+      if (STATE.isBlinking && name !== 'shutdown' && name !== 'wakeup') return;
+      STATE.currentExpression = name;
+      const expr = EYE_PATHS[name] || EYE_PATHS.neutral;
+      leftEyePath.setAttribute('d', expr.left);
+      rightEyePath.setAttribute('d', expr.right);
+    }
+
+    function updateTerminal(msg) {
+      if (STATE.typewriterTimer) clearInterval(STATE.typewriterTimer);
+      terminalText.textContent = "";
+      let i = 0;
+      STATE.typewriterTimer = setInterval(() => {
+        if (i < msg.length) {
+          terminalText.textContent += msg.charAt(i);
+          i++;
+        } else {
+          clearInterval(STATE.typewriterTimer);
+        }
+      }, 25);
+    }
+
+    /* ==========================================================================
+       SOUND SYNTHESIZER
+       ========================================================================== */
+    class SoundEngine {
+      constructor() { this.ctx = null; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+      }
+      playBlip(freq = 600, duration = 0.05) {
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.06, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.start(); osc.stop(this.ctx.currentTime + duration);
+        } catch(e){}
+      }
+    }
+    const sound = new SoundEngine();
+
+    /* ==========================================================================
+       GESTURES & INTERACTION
+       ========================================================================== */
+    function getStageCenter() {
+      const rect = mascotStage.getBoundingClientRect();
+      return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+    }
+
+    const stageCenter = getStageCenter();
+    STATE.mascotPos.x = stageCenter.x;
+    STATE.mascotPos.y = stageCenter.y;
+
+    function recordActivity() {
+      if (STATE.isBored) {
+        STATE.isBored = false;
+        if (STATE.mood === 'idle') {
+          setExpression('neutral');
+          updateTerminal("[SYSTEM: WAKING FROM SLEEPY STANDBY]");
+        }
+      }
+      STATE.lastInteractionTime = performance.now();
+    }
+
+    // Login Gesture Trigger (Head-Nod)
+    function triggerLogin() {
+      sound.init(); sound.playBlip(750, 0.12);
+      if (STATE.mood === 'shutdown') {
+        updateTerminal("[OFFLINE: GENTLY RUB CORE TO WAKE UP]");
+        return;
+      }
+      recordActivity();
+
+      mascotCore.classList.remove('gesture-nod', 'gesture-spin');
+      void mascotCore.offsetWidth;
+      mascotCore.classList.add('gesture-nod');
+
+      setExpression('happy');
+      updateTerminal("[WELCOME BACK, FRIEND! ACCOUNT RECOGNIZED]");
+
+      setTimeout(() => {
+        mascotCore.classList.remove('gesture-nod');
+        if (STATE.mood === 'idle') setExpression('neutral');
+      }, 3000);
+    }
+
+    // Purchase Gesture Trigger (3D Spin)
+    function triggerPurchase() {
+      sound.init(); sound.playBlip(950, 0.18);
+      if (STATE.mood === 'shutdown') {
+        updateTerminal("[OFFLINE: GENTLY RUB CORE TO WAKE UP]");
+        return;
+      }
+      recordActivity();
+
+      mascotCore.classList.remove('gesture-nod', 'gesture-spin');
+      void mascotCore.offsetWidth;
+      mascotCore.classList.add('gesture-spin');
+
+      setExpression('happy');
+      updateTerminal("[PURCHASE SUCCESSFUL! THANK YOU, STAY WONDERFUL!]");
+
+      setTimeout(() => {
+        mascotCore.classList.remove('gesture-spin');
+        if (STATE.mood === 'idle') setExpression('neutral');
+      }, 3500);
+    }
+
+    /* ==========================================================================
+       DRAG & SHUTDOWN / RUB WAKEUP
+       ========================================================================== */
+    mascotStage.addEventListener('pointerdown', (e) => {
+      sound.init();
+      if (STATE.mood === 'shutdown' || STATE.mood === 'wakeup') return;
+
+      recordActivity();
+      STATE.isDragging = true;
+      mascotStage.setPointerCapture(e.pointerId);
+
+      STATE.dragOffset.x = e.clientX - STATE.mascotPos.x;
+      STATE.dragOffset.y = e.clientY - STATE.mascotPos.y;
+      STATE.lastPointerPos = { x: e.clientX, y: e.clientY };
+    });
+
+    mascotStage.addEventListener('pointermove', (e) => {
+      const strokeDx = e.clientX - STATE.lastPointerPos.x;
+      const strokeDy = e.clientY - STATE.lastPointerPos.y;
+
+      if (STATE.mood === 'shutdown' || STATE.mood === 'wakeup') {
+        processRubbing(strokeDx, strokeDy);
+        STATE.lastPointerPos = { x: e.clientX, y: e.clientY };
+        return;
+      }
+
+      if (!STATE.isDragging) {
+        STATE.lastPointerPos = { x: e.clientX, y: e.clientY };
+        return;
+      }
+
+      recordActivity();
+      STATE.mascotPos.x = e.clientX - STATE.dragOffset.x;
+      STATE.mascotPos.y = e.clientY - STATE.dragOffset.y;
+      STATE.mascotVel.x = strokeDx * 0.8;
+      STATE.mascotVel.y = strokeDy * 0.8;
+      STATE.lastPointerPos = { x: e.clientX, y: e.clientY };
+    });
+
+    const endDrag = (e) => {
+      if (!STATE.isDragging) return;
+      STATE.isDragging = false;
+      try { mascotStage.releasePointerCapture(e.pointerId); } catch(err){}
+    };
+    mascotStage.addEventListener('pointerup', endDrag);
+    mascotStage.addEventListener('pointercancel', endDrag);
+
+    // Click Poke & Irritation System
+    mascotStage.addEventListener('click', (e) => {
+      if (STATE.isDragging) return;
+      sound.init();
+      if (STATE.mood === 'shutdown') return;
+
+      recordActivity();
+      STATE.pokeCount++;
+      STATE.lastPokeTime = performance.now();
+      STATE.annoyance = Math.min(CONFIG.maxAnnoyance, STATE.annoyance + 2.2);
+
+      if (STATE.annoyance >= CONFIG.maxAnnoyance) {
+        // Shutdown in Grey Mode
+        STATE.mood = 'shutdown';
+        document.body.className = 'mood-shutdown';
+        setExpression('shutdown');
+        updateTerminal("[SHUTDOWN: OVERHEAT! GENTLY RUB CORE TO WAKE]");
+      } else if (STATE.annoyance >= 6.0) {
+        STATE.mood = 'angry';
+        document.body.className = 'mood-angry';
+        setExpression('angry');
+        mascotCore.classList.add('animate-rage-shake');
+        setTimeout(() => mascotCore.classList.remove('animate-rage-shake'), 400);
+        updateTerminal("[WARNING: ANNOYANCE NEAR MAX! STOP POKING!]");
+      } else if (STATE.annoyance >= 2.5) {
+        setExpression('confused');
+        updateTerminal(`[SYSTEM: AGITATED - POKE #${STATE.pokeCount}]`);
+      }
+    });
+
+    function processRubbing(dx, dy) {
+      const strokeDist = Math.sqrt(dx * dx + dy * dy);
+      if (strokeDist > 0 && strokeDist < 50) {
+        if (STATE.mood === 'shutdown') {
+          STATE.mood = 'wakeup';
+          document.body.className = 'mood-wakeup';
+          setExpression('wakeup');
+        }
+
+        STATE.rubProgress += strokeDist;
+        const percent = Math.min(100, Math.round((STATE.rubProgress / CONFIG.rubRequiredPx) * 100));
+        updateTerminal(`[AWAKENING... ${percent}%]`);
+
+        if (STATE.rubProgress >= CONFIG.rubRequiredPx) {
+          STATE.annoyance = 0;
+          STATE.rubProgress = 0;
+          STATE.mood = 'idle';
+          document.body.className = '';
+          setExpression('neutral');
+          updateTerminal("[SYSTEM STATE: IDLE - STANDBY MODE]");
+        }
+      }
+    }
+
+    /* ==========================================================================
+       ANIMATION LOOP
+       ========================================================================== */
+    window.addEventListener('pointermove', (e) => {
+      if (!STATE.isDragging) {
+        STATE.cursorPos.x = e.clientX;
+        STATE.cursorPos.y = e.clientY;
+      }
+    });
+
+    function animate(currentTime) {
+      requestAnimationFrame(animate);
+
+      const deltaTime = Math.min(0.1, (currentTime - STATE.lastFrameTime) / 1000);
+      STATE.lastFrameTime = currentTime;
+
+      // Annoyance Decay
+      if (STATE.annoyance > 0 && STATE.mood !== 'shutdown' && STATE.mood !== 'wakeup') {
+        if ((performance.now() - STATE.lastPokeTime) / 1000 > 1.2) {
+          STATE.annoyance = Math.max(0, STATE.annoyance - CONFIG.decayRate * deltaTime);
+          if (STATE.annoyance < 2.5 && STATE.mood !== 'idle') {
+            STATE.mood = 'idle';
+            document.body.className = '';
+            setExpression('neutral');
+            updateTerminal("[SYSTEM STATE: IDLE - STANDBY MODE]");
+          }
+        }
+      }
+
+      // 20s Inactivity Sleep
+      if (!STATE.isDragging && STATE.mood === 'idle' && !STATE.isBored) {
+        if ((currentTime - STATE.lastInteractionTime) / 1000 >= CONFIG.boredTimeoutSec) {
+          STATE.isBored = true;
+          setExpression('bored');
+          updateTerminal("[SLEEPY: INACTIVE FOR 20 SECONDS]");
+        }
+      }
+
+      // Autonomous Blinking
+      if (currentTime - STATE.lastBlinkTime > 3500 + Math.random() * 2500 && !STATE.isBlinking && STATE.mood !== 'shutdown') {
+        STATE.lastBlinkTime = currentTime;
+        STATE.isBlinking = true;
+        leftEyePath.setAttribute('d', EYE_PATHS.blink.left);
+        rightEyePath.setAttribute('d', EYE_PATHS.blink.right);
+        setTimeout(() => {
+          const activeExpr = EYE_PATHS[STATE.currentExpression] || EYE_PATHS.neutral;
+          leftEyePath.setAttribute('d', activeExpr.left);
+          rightEyePath.setAttribute('d', activeExpr.right);
+          STATE.isBlinking = false;
+        }, 160);
+      }
+
+      // Stage & Physics Interpolation
+      const stageBase = getStageCenter();
+      const dx = STATE.cursorPos.x - STATE.mascotPos.x;
+      const dy = STATE.cursorPos.y - STATE.mascotPos.y;
+
+      if (!STATE.isDragging && STATE.mood !== 'shutdown') {
+        STATE.mascotVel.x *= 0.88;
+        STATE.mascotVel.y *= 0.88;
+        STATE.mascotPos.x += (stageBase.x + (dx * 0.15) - STATE.mascotPos.x) * CONFIG.lerpFactor + STATE.mascotVel.x;
+        STATE.mascotPos.y += (stageBase.y + (dy * 0.15) - STATE.mascotPos.y) * CONFIG.lerpFactor + STATE.mascotVel.y;
+      } else if (STATE.mood === 'shutdown') {
+        STATE.mascotPos.x += (stageBase.x - STATE.mascotPos.x) * 0.05;
+        STATE.mascotPos.y += (stageBase.y - STATE.mascotPos.y) * 0.05;
+      }
+
+      const timeSec = currentTime * 0.002;
+      const floatBobY = STATE.mood === 'shutdown' ? Math.sin(timeSec * 0.5) * 1.5 : (STATE.isDragging ? 0 : Math.sin(timeSec * 2) * 8);
+
+      const targetRotY = STATE.mood === 'shutdown' ? 0 : Math.max(-30, Math.min(30, (dx / window.innerWidth) * 60));
+      const targetRotX = STATE.mood === 'shutdown' ? 10 : Math.max(-30, Math.min(30, (-dy / window.innerHeight) * 60));
+
+      STATE.rotX += (targetRotX - STATE.rotX) * 0.1;
+      STATE.rotY += (targetRotY - STATE.rotY) * 0.1;
+
+      const renderX = STATE.mascotPos.x - stageBase.x;
+      const renderY = STATE.mascotPos.y - stageBase.y + floatBobY;
+
+      mascotCore.style.transform = `
+        translate3d(${renderX}px, ${renderY}px, 0px)
+        rotateX(${STATE.rotX}deg)
+        rotateY(${STATE.rotY}deg)
+      `;
+
+      const eyeParallaxX = (dx / window.innerWidth) * 14;
+      const eyeParallaxY = (dy / window.innerHeight) * 10;
+      eyeContainer.style.transform = `translate3d(${eyeParallaxX}px, ${eyeParallaxY}px, 25px)`;
+    }
+
+    window.addEventListener('load', () => {
+      setExpression('neutral');
+      requestAnimationFrame(animate);
+    });
+  </script>
+</body>
+</html>
