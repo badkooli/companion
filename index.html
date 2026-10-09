@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Storefront Mascot</title>
+  <title>Neila's Companion</title>
   <style>
     :root {
       --bg-color: #0b0c10;
@@ -230,10 +230,10 @@
   <!-- Storefront Clean Control Panel -->
   <div class="storefront-container">
     <div class="btn-group">
-      <button onclick="triggerLogin()">Simulate Login</button>
+      <button onclick="triggerLogin()">Say Hello</button>
       <button onclick="triggerPurchase()">Simulate Purchase</button>
     </div>
-    <div class="terminal-output" id="terminalText">[SYSTEM STATE: IDLE - STANDBY MODE]</div>
+    <div class="terminal-output" id="terminalText">[IDLE - STANDBY MODE]</div>
   </div>
 
   <script>
@@ -390,7 +390,7 @@
         STATE.isBored = false;
         if (STATE.mood === 'idle') {
           setExpression('neutral');
-          updateTerminal("[SYSTEM: WAKING FROM SLEEPY STANDBY]");
+          updateTerminal("[Gimme a moment to wake up!]");
         }
       }
       STATE.lastInteractionTime = performance.now();
@@ -410,7 +410,7 @@
       mascotCore.classList.add('gesture-nod');
 
       setExpression('happy');
-      updateTerminal("[WELCOME BACK, FRIEND! ACCOUNT RECOGNIZED]");
+      updateTerminal("[WELCOME BACK, Neila! I Missed you!]");
 
       setTimeout(() => {
         mascotCore.classList.remove('gesture-nod');
@@ -503,17 +503,17 @@
         STATE.mood = 'shutdown';
         document.body.className = 'mood-shutdown';
         setExpression('shutdown');
-        updateTerminal("[SHUTDOWN: OVERHEAT! GENTLY RUB CORE TO WAKE]");
+        updateTerminal("[GO AWAY! LEAVE ME ALONE!]");
       } else if (STATE.annoyance >= 6.0) {
         STATE.mood = 'angry';
         document.body.className = 'mood-angry';
         setExpression('angry');
         mascotCore.classList.add('animate-rage-shake');
         setTimeout(() => mascotCore.classList.remove('animate-rage-shake'), 400);
-        updateTerminal("[WARNING: ANNOYANCE NEAR MAX! STOP POKING!]");
+        updateTerminal("[QUIT BEING ANNOYING! STOP POKING ME!]");
       } else if (STATE.annoyance >= 2.5) {
         setExpression('confused');
-        updateTerminal(`[SYSTEM: AGITATED - POKE #${STATE.pokeCount}]`);
+        updateTerminal(`[AGITATED - POKE #${STATE.pokeCount}]`);
       }
     });
 
@@ -536,7 +536,7 @@
           STATE.mood = 'idle';
           document.body.className = '';
           setExpression('neutral');
-          updateTerminal("[SYSTEM STATE: IDLE - STANDBY MODE]");
+          updateTerminal("[IDLE - STANDBY MODE]");
         }
       }
     }
@@ -565,7 +565,7 @@
             STATE.mood = 'idle';
             document.body.className = '';
             setExpression('neutral');
-            updateTerminal("[SYSTEM STATE: IDLE - STANDBY MODE]");
+            updateTerminal("[IDLE - STANDBY MODE]");
           }
         }
       }
@@ -575,7 +575,7 @@
         if ((currentTime - STATE.lastInteractionTime) / 1000 >= CONFIG.boredTimeoutSec) {
           STATE.isBored = true;
           setExpression('bored');
-          updateTerminal("[SLEEPY: INACTIVE FOR 20 SECONDS]");
+          updateTerminal("[You're boring me. YAWN!]");
         }
       }
 
